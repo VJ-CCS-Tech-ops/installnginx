@@ -34,9 +34,11 @@ Vagrant.configure(2) do |config|
     end
 
     # Script provisioner for Master
-  #  $masterFirstBoot = <<-SCRIPT
+   $masterFirstBoot = <<-SCRIPT
   ##  systemctl restart networking
-  #  SCRIPT
+  sudo yum install epel-release
+  sudo yum install ansible
+  SCRIPT
 
     #master.vm.provision "shell", inline: $masterFirstBoot
   end
@@ -60,8 +62,32 @@ Vagrant.configure(2) do |config|
     # Script provisioner for worker
     $scriptworker = <<-SCRIPT
     ping -c 10 ${masteraddress}
-    systemctl restart networking
+    sudo yum install unzip
+    export VAULT_URL="https://releases.hashicorp.com/vault" \
+         VAULT_VERSION="1.5.5"
+    curl \
+      --silent \
+      --remote-name \
+     "${VAULT_URL}/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip"
+
+    curl \
+      --silent \
+      --remote-name \
+      "${VAULT_URL}/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS"
+
+    curl \
+      --silent \
+      --remote-name \
+      "${VAULT_URL}/${VAULT_VERSION}/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig"
+
+    unzip vault_${VAULT_VERSION}_linux_amd64.zip
+    sudo chown root:root vault
+    sudo mv vault /usr/local/bin/
+    vault -autocomplete-install
+    complete -C /usr/local/bin/vault vault
+
     SCRIPT
+
 
     worker.vm.provision "shell", inline: $scriptworker, env: {"masteraddress" => VAULT_ADDRESS},
       run: "always"
