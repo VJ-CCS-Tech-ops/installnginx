@@ -3,7 +3,10 @@
   become: Root
   tasks:
     - name: ensure nginx is at the latest version
-      apt: name=nginx state=latest
+      yum:
+        name: nginx
+        state: present
+
     - name: start nginx
       service:
           name: nginx
