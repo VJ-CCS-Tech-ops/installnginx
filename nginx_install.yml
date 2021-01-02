@@ -4,10 +4,10 @@
   become_method: sudo
   become_user: vagrant
   tasks:
-    - name: ensure nginx is at the latest version
-      yum:
-        name: nginx
-        state: present
+    #- name: ensure nginx is at the latest version
+    #  yum:
+    #    name: nginx
+    #    state: present
     - name: start nginx
       service:
           name: nginx
